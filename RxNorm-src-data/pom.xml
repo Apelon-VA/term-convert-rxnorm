@@ -1,0 +1,59 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>gov.va.oia.terminology.source.RxNorm</groupId>
+	<artifactId>RxNorm-src-data</artifactId>
+	<version>2014.09.02</version>
+	<packaging>pom</packaging>
+
+	<name>RxNorm Source Packager</name>
+	
+	<scm>
+		<url>https://csfe.aceworkspace.net/gerrit/gitweb?p=term-convert-rxnorm.git;tflink=projects.informatics_architecture/scm.term_convert_rxnorm</url>
+	</scm>
+	
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>Copyright Notice
+				This is a work of the U.S. Government and is not subject to copyright
+				protection in the United States. Foreign copyrights may apply.
+			</comments>
+		</license>
+		<license>
+			<name>RxNorm / UMLS license</name>
+			<url>https://uts.nlm.nih.gov/license.html</url>
+			<comments>The RxNorm content packaged by this module is governed licensed by the National Library of Medicine, Department of Health and Human Services</comments>
+		</license>
+	</licenses>
+	
+	<organization>
+		<name>U.S. Department of Veterans Affairs</name>
+		<url>www.va.gov</url>
+	</organization>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>zip</id>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<descriptors>
+								<descriptor>${basedir}/assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -13,7 +13,7 @@
 	<!-- properties -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<rrfBase.version>2.0-SNAPSHOT</rrfBase.version>
+		<rrfBase.version>2.0.1-SNAPSHOT</rrfBase.version>
 	</properties>
 	
 	<scm>
@@ -52,6 +52,21 @@
 	</dependencies>
 	
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -78,6 +93,35 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.1</version>
+				<configuration>
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m4.3</version>
+				<configuration>
+					<pushReleases>false</pushReleases>
+					<noDeploy>true</noDeploy>
+					<allowSnapshots>true</allowSnapshots> <!-- Change this and the above back -->
+					<scmCommentPrefix>[jgitflow-plugin]</scmCommentPrefix>
+					<enableSshAgent>true</enableSshAgent>
+					<flowInitContext>
+						<masterBranchName>master</masterBranchName>
+						<developBranchName>develop</developBranchName>
+						<featureBranchPrefix>feature-</featureBranchPrefix>
+						<releaseBranchPrefix>release-</releaseBranchPrefix>
+						<hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
+					</flowInitContext>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

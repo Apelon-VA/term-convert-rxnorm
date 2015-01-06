@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>gov.va.oia.terminology.converters</groupId>
+	<artifactId>RxNorm-econcept</artifactId>
+	<!-- this should be set to ${sourceData.version}-loader-${loader.version} but that doesn't appease the maven gods that know best.... -->
+	<version>2014.09.02-loader-2.0-SNAPSHOT</version>
+	
+	<packaging>pom</packaging>
+	<name>RxNorm econcept Artifact Generator</name>
+
+	<properties>
+		<sourceData.version>2014.09.02</sourceData.version>
+		<loader.version>2.0-SNAPSHOT</loader.version>
+		<!-- For no classifier, leave this blank-->
+		<resultArtifactClassifier></resultArtifactClassifier>
+	</properties>
+	
+	<scm>
+		<url>https://csfe.aceworkspace.net/gerrit/gitweb?p=term-convert-rxnorm.git;tflink=projects.informatics_architecture/scm.term_convert_rxnorm</url>
+	</scm>
+	
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>Copyright Notice
+				This is a work of the U.S. Government and is not subject to copyright
+				protection in the United States. Foreign copyrights may apply.
+			</comments>
+		</license>
+		<license>
+			<name>RxNorm / UMLS license</name>
+			<url>https://uts.nlm.nih.gov/license.html</url>
+			<comments>The RxNorm content packaged by this module is governed licensed by the National Library of Medicine, Department of Health and Human Services</comments>
+		</license>
+	</licenses>
+	
+	<organization>
+		<name>U.S. Department of Veterans Affairs</name>
+		<url>www.va.gov</url>
+	</organization>
+
+	<dependencies>
+		<dependency>
+			<groupId>gov.va.oia.terminology.converters</groupId>
+			<artifactId>RxNorm-mojo</artifactId>
+			<version>${loader.version}</version>
+			<scope>compile</scope>
+			<optional>true</optional>  <!-- Not needed at runtime -->
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Get source files from archiva -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>fetch-RxNorm-src</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>gov.va.oia.terminology.source.RxNorm</groupId>
+									<artifactId>RxNorm-src-data</artifactId>
+									<version>${sourceData.version}</version>
+									<type>zip</type>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${project.build.directory}/generated-resources/src</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>RxNorm-mojo</artifactId>
+				<version>${loader.version}</version>
+				<executions>
+					<execution>
+						<id>generate-RxNorm-jbin</id>
+						<goals>
+							<goal>convert-RxNorm-to-jbin</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<!-- See ConverterBaseMojo.java and LoincToEConcepts.java for configuration options -->
+							<inputFileLocation>${project.build.directory}/generated-resources/src</inputFileLocation>
+							<!--Just an example -->
+							<!--annotationSkipList>
+								<annotationSkipList>SPECIES</annotationSkipList>
+							</annotationSkipList-->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>attach-result</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assembly/assembly.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</execution>
+					<execution>
+						<id>attach-debug</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>src/assembly/debug.xml</descriptor>
+							</descriptors>
+							<attach>false</attach>
+							<encoding>UTF-8</encoding>
+							<skipAssembly>${sdp}</skipAssembly>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>attach-artifact</id>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<type>jbin.zip</type>
+									<!-- Note that the assembly plugin doesn't use the same classifier - we hack the classifier it returns to be a mis
+										mash of classifier and part of type.  So there is always a classifier on the produced zip file, even if no classifier
+										was specified by the user.  During artifact attachment, this classifier/type mess is corrected. -->
+									<file>${project.build.directory}/${project.build.finalName}-.jbin.zip</file>
+									<classifier>${resultArtifactClassifier}</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+					<execution>
+						<id>attach-artifact-debug</id>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<skipAttach>${sdp}</skipAttach>
+							<artifacts>
+								<artifact>
+									<type>debug.zip</type>
+									<file>${project.build.directory}/${project.build.finalName}-.debug.zip</file>
+									<classifier>${resultArtifactClassifier}</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -4,7 +4,7 @@
 
 	<groupId>gov.va.oia.terminology.converters</groupId>
 	<artifactId>RxNorm-mojo</artifactId>
-	<version>2.0.1-SNAPSHOT</version>
+	<version>2.1.1-SNAPSHOT</version>
 	
 	<name>RxNorm Converter Mojo</name>
 	<packaging>maven-plugin</packaging>

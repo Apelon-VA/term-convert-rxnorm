@@ -1,0 +1,59 @@
+To begin with, I don’t think we need all of RxNorm in SOLOR just yet… please disagree with me if you know of a PRODUCTION PROCESS that would be 
+disrupted by removing most of RxNorm from ISAAC. If not, then I only want two types of concept to move from Nebular to SOLOR: TTY = IN and TTY = SCDC.
+
+ 
+
+1)  Create a new concept called “RxNorm Ingredients” with whatever are the required attributes and metadata for SOLOR.
+
+2)  Make “RxNorm Ingredients” a child of (is-a, or ISA, or however we spell it in ISAAC) SNOMED CT 
+    5032532f-6b58-31f9-84c1-4a365dde4449 Pharmaceutical / biologic product (product)
+
+3)  Make every RxNorm concept having TTY = “IN” a child of “RxNorm Ingredients”.
+
+  a.   TTY “IN” simply means that concept represents an Ingredient.
+
+4)  According to RxNav, those IN concepts are connected to other concepts with a TTY = SCDC (semantic clinical drug component) via a 
+    relationship called “ingredient_of)” or in the inverse direction “has_ingredient”.
+
+  a.   We will use is-a instead. Make each SCDC is-a child of one or more IN concepts, and each instance of that relationship should correspond 
+       to an RxNorm ingredient_of relationship. We DO NOT NEED the original RxNorm relationships in SOLOR at this time. It is possible that a given 
+       SCDC will have more than one parent this way… combination drugs. It’s also possible that SCDCs have relationships that we are ignoring right 
+       now (e.g., to TTY = MIN) concepts
+
+    b.  Now, the hierarchy should look like this
+
+        i.  SNOMED Pharm / Bio Product
+          RxNorm Ingredients
+            Ingredient 1 
+              SCDC 1
+              SCDC 2
+            Ingredient 2
+              SCDC 3
+              SCDC 4
+              
+              
+              
+The only “concepts” we want in RxNorm are selected RXN atoms distinguished by their RXCUI, everything else is at most a description.
+But you still have two RXN atoms to deal with. In the example you give, the “concept” is the TTY = IN. TTY = TMSY means “TallMan synonym”, 
+which is a display form used to try and help people distinguish similar-looking drug names by capitalizing the important letters so they 
+don’t make errors in prescribing or dispending. So, that’s also a description. The only TTYs we will ever make concepts out of (at least 
+in the next year) are
+  IN, MIN, PIN, SCDC, SCD, SCDG, BN, SBDC, SBD, SBDG, DF, DFG,
+
+And of those, IN, MIN, SCDC and SCD are sufficient for the next several months, with BN and DF coming next after those.
+
+The relationships I care about are (hopefully) already present connecting RXCUIs of the above term types, and we can dump all the rest of the
+relationships (unless VA supplies proof that they have license to use the outside sources of content).
+
+All the rest of those AUIs, and any relationships among AUIs, are actually properties of the outside sources that go into RxNorm, and in fact
+may be proprietary. Can descriptions have attributes (like string attributes, not relationships) of their own in the WB? If so, then just slap
+everything else in as a description, with attributes for the SAB, SAUI, SCUI. If that doesn’t work, could we achieve the same thing with a Refset
+that holds the description attributes? For example,
+
+RXCUI   -- to associate the description with the concept
+Description text
+SAB
+SAUI
+SCUI
+IsPref
+…

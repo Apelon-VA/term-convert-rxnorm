@@ -28,4 +28,9 @@ public class ValuePropertyPairWithSAB extends ValuePropertyPairWithAttributes
 		}
 		return super.compareTo(o);
 	}
+	
+	public String getSab()
+	{
+		return sab_;
+	}
 }

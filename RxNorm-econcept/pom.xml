@@ -4,16 +4,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>gov.va.oia.terminology.converters</groupId>
-	<artifactId>RxNorm-econcept</artifactId>
+	<artifactId>RxNormH-econcept</artifactId>
 	<!-- this should be set to ${sourceData.version}-loader-${loader.version} but that doesn't appease the maven gods that know best.... -->
-	<version>2014.09.02-loader-2.1-SNAPSHOT</version>
+	<version>2014.09.02-loader-3.0-SNAPSHOT</version>
 	
 	<packaging>pom</packaging>
-	<name>RxNorm econcept Artifact Generator</name>
+	<name>RxNorm Hierarchical econcept Artifact Generator</name>
 
 	<properties>
 		<sourceData.version>2014.09.02</sourceData.version>
-		<loader.version>2.1-SNAPSHOT</loader.version>
+		<loader.version>3.0-SNAPSHOT</loader.version>
 		<!-- For no classifier, leave this blank-->
 		<resultArtifactClassifier></resultArtifactClassifier>
 	</properties>
@@ -47,7 +47,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>gov.va.oia.terminology.converters</groupId>
-			<artifactId>RxNorm-mojo</artifactId>
+			<artifactId>RxNormH-mojo</artifactId>
 			<version>${loader.version}</version>
 			<scope>compile</scope>
 			<optional>true</optional>  <!-- Not needed at runtime -->
@@ -84,13 +84,13 @@
 
 			<plugin>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>RxNorm-mojo</artifactId>
+				<artifactId>RxNormH-mojo</artifactId>
 				<version>${loader.version}</version>
 				<executions>
 					<execution>
-						<id>generate-RxNorm-jbin</id>
+						<id>generate-RxNormH-jbin</id>
 						<goals>
-							<goal>convert-RxNorm-to-jbin</goal>
+							<goal>convert-RxNormH-to-jbin</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>

@@ -12,7 +12,7 @@
 	<!-- properties -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<rrfBase.version>2.1-SNAPSHOT</rrfBase.version>
+		<rrfBase.version>2.1</rrfBase.version>
 	</properties>
 	
 	<scm>
@@ -114,10 +114,10 @@
 					<allowSnapshots>true</allowSnapshots>
 					<enableFeatureVersions>true</enableFeatureVersions>
 					<flowInitContext>
-						<masterBranchName>master</masterBranchName>
-						<developBranchName>develop</developBranchName>
-						<featureBranchPrefix>feature-</featureBranchPrefix>
-						<releaseBranchPrefix>release-</releaseBranchPrefix>
+						<masterBranchName>h-master</masterBranchName>
+						<developBranchName>h-develop</developBranchName>
+						<featureBranchPrefix>h-feature-</featureBranchPrefix>
+						<releaseBranchPrefix>h-release-</releaseBranchPrefix>
 						<hotfixBranchPrefix>hotfix-</hotfixBranchPrefix>
 					</flowInitContext>
 				</configuration>

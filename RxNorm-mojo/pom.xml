@@ -4,7 +4,7 @@
 
 	<groupId>gov.va.oia.terminology.converters</groupId>
 	<artifactId>RxNormH-mojo</artifactId>
-	<version>3.0</version>
+	<version>3.1-SNAPSHOT</version>
 	
 	<name>RxNormH Converter Mojo</name>
 	<packaging>maven-plugin</packaging>

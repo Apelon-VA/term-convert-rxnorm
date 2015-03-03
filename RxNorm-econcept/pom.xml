@@ -6,7 +6,7 @@
 	<groupId>gov.va.oia.terminology.converters</groupId>
 	<artifactId>RxNormH-econcept</artifactId>
 	<!-- this should be set to ${sourceData.version}-loader-${loader.version} but that doesn't appease the maven gods that know best.... -->
-	<version>2014.09.02-loader-3.0</version>
+	<version>2014.09.02-loader-3.1-SNAPSHOT</version>
 	
 	<packaging>pom</packaging>
 	<name>RxNorm Hierarchical econcept Artifact Generator</name>

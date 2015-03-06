@@ -4,6 +4,7 @@ import gov.va.oia.terminology.converters.sharedUtils.ConsoleUtil;
 import gov.va.oia.terminology.converters.sharedUtils.propertyTypes.BPT_Descriptions;
 import gov.va.oia.terminology.converters.sharedUtils.propertyTypes.BPT_MemberRefsets;
 import gov.va.oia.terminology.converters.sharedUtils.propertyTypes.Property;
+import gov.va.oia.terminology.converters.sharedUtils.propertyTypes.ValuePropertyPair;
 import gov.va.oia.terminology.converters.sharedUtils.stats.ConverterUUID;
 import gov.va.oia.terminology.converters.umlsUtils.RRFBaseConverterMojo;
 import gov.va.oia.terminology.converters.umlsUtils.RRFDatabaseHandle;
@@ -351,6 +352,27 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			eConcepts_.addRefsetMember(ptRefsets_.get(sab).getConcept(terminologyCodeRefsetPropertyName_.get(sab)) , cuiConcept.getPrimordialUuid(), null, Status.ACTIVE, null);
 		}
 		
+		//sanity check on descriptions - make sure we only have one that is of type synonym with the preferred flag
+		ArrayList<String> items = new ArrayList<String>();
+		for (ValuePropertyPair vpp : cuiDescriptions)
+		{
+			//Numbers come from the rankings down below in makeDescriptionType(...)
+			if (vpp.getProperty().getPropertySubType() >= BPT_Descriptions.SYNONYM && vpp.getProperty().getPropertySubType() < (BPT_Descriptions.SYNONYM + 15))
+			{
+				items.add(vpp.getProperty().getSourcePropertyNameFSN() + " " + vpp.getProperty().getPropertySubType());
+			}
+		}
+		
+		if (items.size() > 1)
+		{
+			ConsoleUtil.printErrorln("Need to rank multiple synonym types that are each marked preferred!");
+			for (String s : items)
+			{
+				ConsoleUtil.printErrorln(s);
+			}
+			throw new RuntimeException("Broken assumption!");
+		}
+		
 		List<TtkDescriptionChronicle> addedDescriptions = eConcepts_.addDescriptions(cuiConcept, cuiDescriptions);
 		
 		if (addedDescriptions.size() != cuiDescriptions.size())
@@ -478,7 +500,8 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		//Just preferred, and we make it the top synonym.
 		else if (tty_classes.contains("preferred") && tty_classes.size() == 1)
 		{
-			//TODO verify this ranking of TTY's with John
+			//these sub-rankings are somewhat arbitrary at the moment, and in general, unused.  There is an error check up above which 
+			//will fail the conversion if it tries to rely on these sub-rankings to find a preferred term
 			int preferredSubRank;
 			if (altName.equals("IN"))
 			{

@@ -13,8 +13,8 @@ import gov.va.oia.terminology.converters.umlsUtils.ValuePropertyPairWithAttribut
 import gov.va.oia.terminology.converters.umlsUtils.rrf.REL;
 import gov.va.oia.terminology.converters.umlsUtils.sql.TableDefinition;
 import gov.va.rxnorm.propertyTypes.PT_Annotations;
-import gov.va.rxnorm.propertyTypes.PT_IDs;
 import gov.va.rxnorm.rrf.RXNCONSO;
+import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -43,8 +43,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.dto.TtkConceptChronicle;
 import org.ihtsdo.otf.tcc.dto.component.TtkComponentChronicle;
 import org.ihtsdo.otf.tcc.dto.component.description.TtkDescriptionChronicle;
-import org.ihtsdo.otf.tcc.dto.component.refex.type_string.TtkRefexStringMemberChronicle;
-import org.ihtsdo.otf.tcc.dto.component.refex.type_uuid.TtkRefexUuidMemberChronicle;
+import org.ihtsdo.otf.tcc.dto.component.refexDynamic.TtkRefexDynamicMemberChronicle;
+import org.ihtsdo.otf.tcc.dto.component.refexDynamic.data.dataTypes.TtkRefexDynamicString;
 import org.ihtsdo.otf.tcc.dto.component.relationship.TtkRelationshipChronicle;
 
 /**
@@ -74,7 +74,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			SimpleDateFormat sdf = new SimpleDateFormat("MMddYYYY");
 			long defaultTime = sdf.parse(fileNameDatePortion).getTime();
 			
-			init(outputDirectory, "RxNormH", "RXN", new PT_IDs(), new PT_Annotations(), Arrays.asList(new String[] {"RXNORM"}), null,
+			init(outputDirectory, "RxNormH", "RXN", new PT_Annotations(), Arrays.asList(new String[] {"RXNORM"}), null,
 					Arrays.asList(new String[] {"has_ingredient"}), defaultTime);
 			
 			allCUIRefsetConcept_ = ptUMLSRefsets_.getConcept(ptUMLSRefsets_.CUI_CONCEPTS.getSourcePropertyNameFSN());
@@ -255,7 +255,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		return toReturn;
 	}
 
-	private void processCUIRows(ArrayList<RXNCONSO> conceptData) throws IOException, SQLException
+	private void processCUIRows(ArrayList<RXNCONSO> conceptData) throws IOException, SQLException, PropertyVetoException
 	{
 		String rxCui = conceptData.get(0).rxcui;
 		
@@ -273,7 +273,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		}
 
 		TtkConceptChronicle cuiConcept = eConcepts_.createConcept(createCUIConceptUUID(rxCui));
-		eConcepts_.addAdditionalIds(cuiConcept, rxCui, ptIds_.getProperty("RXCUI").getUUID(), Status.ACTIVE);
+		eConcepts_.addStringAnnotation(cuiConcept, rxCui, ptUMLSAttributes_.getProperty("RXCUI").getUUID(), Status.ACTIVE);
 		
 		//Special rule from John - if contains a IN TTY type - hang in from our RxNorm Ingredients concept.
 		if (uniqueTTYs.contains("IN"))
@@ -290,12 +290,12 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			if (!atom.code.equals("NOCODE") && !uniqueCodes.containsKey(atom.code))
 			{
 				ValuePropertyPairWithSAB code = new ValuePropertyPairWithSAB(atom.code, ptUMLSAttributes_.getProperty("CODE"), atom.sab);
-				code.addStringAttribute(ptUMLSAttributes_.getProperty("SAB").getUUID(), atom.sab);
+				code.addUUIDAttribute(ptUMLSAttributes_.getProperty("SAB").getUUID(), ptSABs_.getProperty(atom.sab).getUUID());
 				uniqueCodes.put(atom.code, code);
 			}
 
 			//put it in as a string, so users can search for AUI
-			eConcepts_.addAdditionalIds(cuiConcept, atom.rxaui, ptIds_.getProperty("RXAUI").getUUID(), Status.ACTIVE);
+			eConcepts_.addStringAnnotation(cuiConcept, atom.rxaui, ptUMLSAttributes_.getProperty("RXAUI").getUUID(), Status.ACTIVE);
 				
 			ValuePropertyPairWithSAB desc = new ValuePropertyPairWithSAB(atom.str, ptDescriptions_.get(atom.sab).getProperty(atom.tty), atom.sab);
 			
@@ -303,7 +303,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			cuiDescriptions.add(desc);
 			
 			desc.addStringAttribute(ptUMLSAttributes_.getProperty("RXAUI").getUUID(), atom.rxaui);
-			desc.addStringAttribute(ptUMLSAttributes_.getProperty("SAB").getUUID(), atom.sab);
+			desc.addUUIDAttribute(ptUMLSAttributes_.getProperty("SAB").getUUID(), ptSABs_.getProperty(atom.sab).getUUID());
 				
 			if (atom.saui != null)
 			{
@@ -349,7 +349,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		
 		for (String sab : sabs)
 		{
-			eConcepts_.addRefsetMember(ptRefsets_.get(sab).getConcept(terminologyCodeRefsetPropertyName_.get(sab)) , cuiConcept.getPrimordialUuid(), null, Status.ACTIVE, null);
+			eConcepts_.addDynamicRefsetMember(ptRefsets_.get(sab).getConcept(terminologyCodeRefsetPropertyName_.get(sab)) , cuiConcept.getPrimordialUuid(), null, Status.ACTIVE, null);
 		}
 		
 		//sanity check on descriptions - make sure we only have one that is of type synonym with the preferred flag
@@ -414,8 +414,8 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		for (String umlsCui : uniqueUMLSCUI)
 		{
 			UUID itemUUID = ConverterUUID.createNamespaceUUIDFromString("UMLSCUI" + umlsCui);
-			eConcepts_.addStringAnnotation(cuiConcept.getConceptAttributes(), itemUUID, umlsCui, ptTermAttributes_.get("RXNORM").getProperty("UMLSCUI").getUUID(), 
-					Status.ACTIVE, null);
+			eConcepts_.addAnnotation(cuiConcept.getConceptAttributes(), itemUUID, new TtkRefexDynamicString(umlsCui), 
+					ptTermAttributes_.get("RXNORM").getProperty("UMLSCUI").getUUID(), Status.ACTIVE, null);
 		}
 		
 		ValuePropertyPairWithAttributes.processAttributes(eConcepts_, cuiDescriptions, addedDescriptions);
@@ -436,14 +436,14 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		cuiRelStatementBackward.setString(1, rxCui);
 		addRelationships(cuiConcept, REL.read(null, cuiRelStatementBackward.executeQuery(), false, allowedCUIs, skippedRelForNotMatchingCUIFilter, this));
 
-		eConcepts_.addRefsetMember(allCUIRefsetConcept_, cuiConcept.getPrimordialUuid(), null, Status.ACTIVE, null);
+		eConcepts_.addDynamicRefsetMember(allCUIRefsetConcept_, cuiConcept.getPrimordialUuid(), null, Status.ACTIVE, null);
 		cuiConcept.writeExternal(dos_);
 	}
 
 	@Override
 	protected void processRelCVFAttributes(TtkRelationshipChronicle r, List<REL> duplicateRelationships)
 	{
-		TtkRefexUuidMemberChronicle member = null;
+		TtkRefexDynamicMemberChronicle member = null;
 		for (REL dupeRel : duplicateRelationships)
 		{
 			if (dupeRel.getCvf() != null)
@@ -452,11 +452,9 @@ public class RxNormMojo extends RRFBaseConverterMojo
 				{
 					if (member == null)
 					{
-						member = eConcepts_.addRefsetMember(cpcRefsetConcept_, r.getPrimordialComponentUuid(), null, Status.ACTIVE, null);
-						eConcepts_.addStringAnnotation(member, dupeRel.getSourceTargetAnnotationLabel(), 
-								ptRelationshipMetadata_.getProperty("sAUI & tAUI").getUUID(), Status.ACTIVE);
+						member = eConcepts_.addDynamicRefsetMember(cpcRefsetConcept_, r.getPrimordialComponentUuid(), null, Status.ACTIVE, null);
 					}
-					else
+					if (dupeRel.getSourceTargetAnnotationLabel() != null)
 					{
 						eConcepts_.addStringAnnotation(member, dupeRel.getSourceTargetAnnotationLabel(), 
 								ptRelationshipMetadata_.getProperty("sAUI & tAUI").getUUID(), Status.ACTIVE);
@@ -586,7 +584,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 		{
 			throw new RuntimeException("Unexpected class type " + Arrays.toString(tty_classes.toArray()));
 		}
-		return new Property(null, fsnName, preferredName, altName, description, false, descriptionTypeRanking);
+		return new Property(null, fsnName, preferredName, altName, description, false, descriptionTypeRanking, null);
 	}
 
 	@Override
@@ -609,7 +607,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 
 	@Override
 	protected void processSAT(TtkComponentChronicle<?> itemToAnnotate, ResultSet rs, String itemCode, String itemSab, 
-			List<BiFunction<String, String, Boolean>> customHandle) throws SQLException
+			List<BiFunction<String, String, Boolean>> customHandle) throws SQLException, PropertyVetoException
 	{
 		
 		
@@ -660,11 +658,11 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			
 			//You would expect that ptTermAttributes_.get() would be looking up sab, rather than having RxNorm hardcoded... but this is an oddity of 
 			//a hack we are doing within the RxNorm load.
-			TtkRefexStringMemberChronicle attribute = eConcepts_.addStringAnnotation(itemToAnnotate, stringAttrUUID, atv, refsetUUID, Status.ACTIVE, null);
+			TtkRefexDynamicMemberChronicle attribute = eConcepts_.addAnnotation(itemToAnnotate, stringAttrUUID, new TtkRefexDynamicString(atv), refsetUUID, Status.ACTIVE, null);
 			
 			if (atui != null)
 			{
-				eConcepts_.addAdditionalIds(attribute, atui, ptIds_.getProperty("ATUI").getUUID());
+				eConcepts_.addStringAnnotation(attribute, atui, ptUMLSAttributes_.getProperty("ATUI").getUUID(), null);
 			}
 			
 			//dropping for space savings
@@ -701,7 +699,7 @@ public class RxNormMojo extends RRFBaseConverterMojo
 			{
 				if (cvf.equals("4096"))
 				{
-					eConcepts_.addRefsetMember(cpcRefsetConcept_, attribute.getPrimordialComponentUuid(), null, Status.ACTIVE, null);
+					eConcepts_.addDynamicRefsetMember(cpcRefsetConcept_, attribute.getPrimordialComponentUuid(), null, Status.ACTIVE, null);
 				}
 				else
 				{

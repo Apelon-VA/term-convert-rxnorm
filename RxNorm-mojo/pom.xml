@@ -12,7 +12,7 @@
 	<!-- properties -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<rrfBase.version>2.3</rrfBase.version>
+		<rrfBase.version>2.4-SNAPSHOT</rrfBase.version>
 	</properties>
 	
 	<scm>
